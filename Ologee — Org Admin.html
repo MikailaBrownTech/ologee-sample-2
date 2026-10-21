@@ -1,0 +1,1000 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Ologee — Org Admin</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap">
+
+<style>
+/* ── Tokens ──────────────────────────────────────────────── */
+:root {
+  --black:     #0F0F0D;
+  --ink:       #1A1A18;
+  --emerald:   #187A49;
+  --em-mid:    #1F9A5E;
+  --em-light:  #E8F5EE;
+  --gold:      #B8922E;
+  --gold-lt:   #FDF4E0;
+  --red:       #C0392B;
+  --red-lt:    #FDECEB;
+  --blue:      #1A5FA0;
+  --blue-lt:   #EBF2FA;
+  --purple:    #6B3FA0;
+  --purple-lt: #F0EBF8;
+
+  --canvas:    #F5F4F0;
+  --surface:   #FFFFFF;
+  --surface-2: #F9F8F5;
+  --line:      #E8E7E2;
+  --fg:        #18181A;
+  --fg-2:      #636360;
+  --fg-3:      #A8A8A4;
+
+  --sidebar-w: 220px;
+  --topbar-h:  52px;
+  --r: 12px;
+  --r-sm: 8px;
+
+  font-family: 'Inter', system-ui, sans-serif;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --canvas: #111110; --surface: #1A1A18; --surface-2: #222220;
+    --line: #2E2E2C; --fg: #EEECEA; --fg-2: #909088; --fg-3: #5A5A56;
+    --em-light: #0D2418; --gold-lt: #261D08; --red-lt: #2A0E0C; --blue-lt: #0A1A2E; --purple-lt: #1A1226;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --canvas: #111110; --surface: #1A1A18; --surface-2: #222220;
+  --line: #2E2E2C; --fg: #EEECEA; --fg-2: #909088; --fg-3: #5A5A56;
+  --em-light: #0D2418; --gold-lt: #261D08; --red-lt: #2A0E0C; --blue-lt: #0A1A2E; --purple-lt: #1A1226;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; }
+a { text-decoration: none; }
+
+body {
+  background: var(--canvas);
+  color: var(--fg);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ══ TOPBAR ══ */
+.topbar {
+  height: var(--topbar-h);
+  background: var(--black);
+  display: flex; align-items: center;
+  padding: 0 20px; gap: 16px;
+  flex-shrink: 0; z-index: 200;
+}
+.tb-logo {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 1.05rem; font-weight: 400; letter-spacing: -0.01em;
+  color: #fff; flex-shrink: 0;
+}
+.tb-logo span { color: var(--emerald); }
+.tb-org {
+  font-size: 0.68rem; font-weight: 600; color: rgba(255,255,255,0.5);
+  padding: 3px 10px; border-radius: 99px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  flex-shrink: 0;
+}
+.tb-role {
+  font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 8px; border-radius: 99px;
+  background: rgba(24,122,73,0.25);
+  color: #4ecb82;
+  flex-shrink: 0;
+}
+.tb-spacer { flex: 1; }
+.tb-notif {
+  position: relative; width: 32px; height: 32px;
+  border-radius: 8px; border: 1px solid rgba(255,255,255,0.12);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem; cursor: pointer; color: rgba(255,255,255,0.5);
+}
+.tb-notif:hover { background: rgba(255,255,255,0.07); color: #fff; }
+.notif-dot {
+  position: absolute; top: 6px; right: 7px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--red); border: 1.5px solid var(--black);
+}
+.tb-av {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: linear-gradient(135deg, #6B3FA0, #187A49);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; font-weight: 700; color: #fff;
+  cursor: pointer; flex-shrink: 0;
+}
+
+/* ══ SHELL ══ */
+.shell { flex: 1; display: flex; min-height: 0; overflow: hidden; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar-w); background: var(--surface);
+  border-right: 1px solid var(--line);
+  display: flex; flex-direction: column;
+  flex-shrink: 0; overflow-y: auto;
+}
+.nav-section { padding: 16px 0 8px; }
+.nav-label {
+  padding: 0 16px 6px;
+  font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--fg-3);
+}
+.nav-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 16px; cursor: pointer;
+  font-size: 0.78rem; font-weight: 500; color: var(--fg-2);
+  transition: all 0.11s; position: relative;
+}
+.nav-item:hover { background: var(--surface-2); color: var(--fg); }
+.nav-item.active { color: var(--fg); font-weight: 600; background: var(--canvas); }
+.nav-item.active::before {
+  content: ''; position: absolute; left: 0; top: 25%; bottom: 25%;
+  width: 2px; border-radius: 2px; background: var(--emerald);
+}
+.nav-icon { font-size: 0.85rem; width: 16px; text-align: center; flex-shrink: 0; }
+.nav-badge {
+  margin-left: auto; min-width: 18px; height: 18px; padding: 0 5px;
+  border-radius: 99px; background: var(--red); color: #fff;
+  font-size: 0.58rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.nav-badge.gold { background: var(--gold); }
+.sidebar-bottom {
+  margin-top: auto; border-top: 1px solid var(--line); padding: 14px 16px;
+}
+.sidebar-user { display: flex; gap: 10px; align-items: center; }
+.su-av {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, #6B3FA0, #187A49);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.62rem; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.su-name { font-size: 0.75rem; font-weight: 600; color: var(--fg); }
+.su-role { font-size: 0.64rem; color: var(--fg-3); margin-top: 1px; }
+
+/* ── MAIN ── */
+.main { flex: 1; min-width: 0; overflow-y: auto; display: flex; flex-direction: column; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Page header */
+.page-head {
+  padding: 28px 32px 20px;
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: flex-end;
+  justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+.ph-label {
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--fg-3); margin-bottom: 5px;
+}
+.ph-title {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 1.4rem; font-weight: 400; letter-spacing: -0.01em;
+  color: var(--fg);
+}
+.ph-actions { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
+
+/* Buttons */
+.btn-em {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0 16px; height: 34px; border-radius: var(--r-sm);
+  background: var(--emerald); color: #fff;
+  font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: background 0.12s;
+}
+.btn-em:hover { background: var(--em-mid); }
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0 14px; height: 32px; border-radius: var(--r-sm);
+  background: transparent; border: 1px solid var(--line);
+  color: var(--fg-2); font-size: 0.74rem; font-weight: 500;
+  cursor: pointer; transition: all 0.12s;
+}
+.btn-ghost:hover { background: var(--surface); color: var(--fg); }
+.btn-ink {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0 16px; height: 34px; border-radius: var(--r-sm);
+  background: var(--fg); color: var(--canvas);
+  font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: background 0.12s;
+}
+.btn-ink:hover { background: var(--emerald); }
+.btn-red {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0 14px; height: 30px; border-radius: var(--r-sm);
+  background: var(--red-lt); color: var(--red);
+  font-size: 0.7rem; font-weight: 600; cursor: pointer;
+}
+
+/* Pills */
+.pill {
+  display: inline-flex; align-items: center;
+  padding: 3px 9px; border-radius: 99px;
+  font-size: 0.6rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+}
+.pill-em  { background: var(--em-light); color: var(--emerald); }
+.pill-gld { background: var(--gold-lt);  color: var(--gold); }
+.pill-red { background: var(--red-lt);   color: var(--red); }
+.pill-neu { background: var(--surface-2); color: var(--fg-2); border: 1px solid var(--line); }
+.pill-pur { background: var(--purple-lt); color: var(--purple); }
+
+/* Toggle */
+.toggle {
+  width: 32px; height: 18px; border-radius: 99px;
+  background: var(--line); position: relative; cursor: pointer;
+  transition: background 0.15s; flex-shrink: 0;
+}
+.toggle::after {
+  content: ''; position: absolute;
+  top: 3px; left: 3px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: #fff; transition: transform 0.15s;
+}
+.toggle.on { background: var(--emerald); }
+.toggle.on::after { transform: translateX(14px); }
+
+/* ══ TAB: HOME ══ */
+.home-body { padding: 28px 32px; display: flex; flex-direction: column; gap: 28px; }
+
+/* KPI strip */
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 1px; background: var(--line);
+  border: 1px solid var(--line); border-radius: var(--r); overflow: hidden;
+}
+.kpi-cell {
+  background: var(--surface); padding: 18px 20px;
+}
+.kpi-label {
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--fg-3); margin-bottom: 8px;
+}
+.kpi-val {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 1.6rem; color: var(--fg); line-height: 1;
+}
+.kpi-delta {
+  font-size: 0.65rem; color: var(--emerald); margin-top: 5px; font-weight: 600;
+}
+.kpi-delta.neg { color: var(--red); }
+
+/* Section card */
+.sec-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r); overflow: hidden;
+}
+.sec-head {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.sec-title {
+  font-size: 0.8rem; font-weight: 700; color: var(--fg);
+}
+.sec-link {
+  font-size: 0.7rem; color: var(--emerald); cursor: pointer; font-weight: 600;
+}
+
+/* Action item */
+.action-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 13px 20px; border-bottom: 1px solid var(--line);
+}
+.action-item:last-child { border-bottom: none; }
+.ai-icon {
+  width: 34px; height: 34px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+}
+.ai-text { flex: 1; }
+.ai-title { font-size: 0.78rem; font-weight: 600; color: var(--fg); }
+.ai-sub { font-size: 0.65rem; color: var(--fg-3); margin-top: 2px; }
+.ai-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+/* ══ TAB: MEMBERS ══ */
+.members-body { padding: 24px 32px; display: flex; flex-direction: column; gap: 16px; }
+.search-bar {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+}
+.search-input {
+  flex: 1; min-width: 200px;
+  border: 1px solid var(--line); border-radius: var(--r-sm);
+  background: var(--surface); padding: 8px 14px;
+  font-size: 0.8rem; color: var(--fg); outline: none;
+}
+.search-input:focus { border-color: var(--emerald); }
+.search-input::placeholder { color: var(--fg-3); }
+
+/* Member table */
+.member-table { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.mt-head {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 120px;
+  padding: 10px 20px; background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+}
+.mt-col {
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--fg-3);
+}
+.mt-row {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 120px;
+  padding: 12px 20px; border-bottom: 1px solid var(--line);
+  align-items: center; transition: background 0.1s;
+}
+.mt-row:last-child { border-bottom: none; }
+.mt-row:hover { background: var(--surface-2); }
+.mt-name { display: flex; align-items: center; gap: 10px; }
+.mt-av {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--emerald), var(--ink));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.58rem; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.mt-nm { font-size: 0.78rem; font-weight: 600; color: var(--fg); }
+.mt-email { font-size: 0.65rem; color: var(--fg-3); margin-top: 1px; }
+.mt-cell { font-size: 0.75rem; color: var(--fg-2); }
+.mt-actions { display: flex; gap: 6px; }
+
+/* ══ TAB: COURSES ══ */
+.courses-body { padding: 24px 32px; display: flex; flex-direction: column; gap: 16px; }
+.approval-card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r); overflow: hidden;
+}
+.ac-head {
+  padding: 16px 20px; border-bottom: 1px solid var(--line);
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+}
+.ac-title { font-size: 0.88rem; font-weight: 700; color: var(--fg); margin-bottom: 4px; }
+.ac-meta { font-size: 0.68rem; color: var(--fg-3); }
+.ac-body { padding: 14px 20px; display: flex; flex-direction: column; gap: 8px; }
+.ac-detail { font-size: 0.74rem; color: var(--fg-2); display: flex; gap: 6px; }
+.ac-detail strong { color: var(--fg); }
+.ac-footer {
+  padding: 12px 20px; border-top: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+
+/* ══ TAB: INSTRUCTORS ══ */
+.inst-body { padding: 24px 32px; display: flex; flex-direction: column; gap: 16px; }
+.inst-table { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.it-head {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 100px;
+  padding: 10px 20px; background: var(--surface-2); border-bottom: 1px solid var(--line);
+}
+.it-row {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 100px;
+  padding: 12px 20px; border-bottom: 1px solid var(--line); align-items: center;
+}
+.it-row:last-child { border-bottom: none; }
+.it-row:hover { background: var(--surface-2); }
+
+/* ══ TAB: SETTINGS ══ */
+.settings-body { padding: 28px 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.setting-card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r); padding: 20px 24px;
+}
+.setting-card.full { grid-column: 1 / -1; }
+.sk-title {
+  font-size: 0.8rem; font-weight: 700; color: var(--fg);
+  margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--line);
+}
+.sk-field { margin-bottom: 14px; }
+.sk-label { font-size: 0.68rem; font-weight: 600; color: var(--fg-2); margin-bottom: 6px; }
+.sk-input {
+  width: 100%; border: 1px solid var(--line); border-radius: var(--r-sm);
+  background: var(--surface-2); padding: 8px 12px;
+  font-size: 0.8rem; color: var(--fg); outline: none;
+}
+.sk-input:focus { border-color: var(--emerald); }
+.sk-toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0; border-bottom: 1px solid var(--line);
+}
+.sk-toggle-row:last-child { border-bottom: none; }
+.sk-toggle-lbl { font-size: 0.76rem; color: var(--fg); }
+.sk-toggle-sub { font-size: 0.64rem; color: var(--fg-3); margin-top: 2px; }
+
+/* Color swatch */
+.color-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.color-swatch {
+  width: 28px; height: 28px; border-radius: 6px; cursor: pointer;
+  border: 2px solid transparent; transition: border-color 0.12s;
+}
+.color-swatch.active { border-color: var(--fg); }
+
+/* Plan badge */
+.plan-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px; border-radius: 99px;
+  background: var(--purple-lt); color: var(--purple);
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em;
+}
+</style>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="tb-logo">Olog<span>ee</span></div>
+  <div class="tb-org">Restorative Legacy Ecosystem</div>
+  <div class="tb-role">Org Admin</div>
+  <div class="tb-spacer"></div>
+  <div class="tb-notif">🔔<div class="notif-dot"></div></div>
+  <div class="tb-av">KR</div>
+</div>
+
+<!-- SHELL -->
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="nav-section">
+      <div class="nav-label">Overview</div>
+      <div class="nav-item active" id="nav-home" onclick="go('home')">
+        <span class="nav-icon">⊞</span> Dashboard
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">People</div>
+      <div class="nav-item" id="nav-members" onclick="go('members')">
+        <span class="nav-icon">👥</span> Members
+        <span class="nav-badge">3</span>
+      </div>
+      <div class="nav-item" id="nav-instructors" onclick="go('instructors')">
+        <span class="nav-icon">🎓</span> Instructors
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Content</div>
+      <div class="nav-item" id="nav-courses" onclick="go('courses')">
+        <span class="nav-icon">📚</span> Course Approvals
+        <span class="nav-badge">2</span>
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Organization</div>
+      <div class="nav-item" id="nav-settings" onclick="go('settings')">
+        <span class="nav-icon">⚙</span> Settings & Branding
+      </div>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="sidebar-user">
+        <div class="su-av">KR</div>
+        <div>
+          <div class="su-name">Kezia Redmond</div>
+          <div class="su-role">Org Admin</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- ══ TAB: HOME ══ -->
+    <div class="tab-panel active" id="tab-home">
+      <div class="page-head">
+        <div>
+          <div class="ph-label">Restorative Legacy Ecosystem</div>
+          <div class="ph-title">Admin Dashboard</div>
+        </div>
+        <div class="ph-actions">
+          <button class="btn-ghost">Export report</button>
+          <button class="btn-em">+ Invite member</button>
+        </div>
+      </div>
+      <div class="home-body">
+
+        <!-- KPIs -->
+        <div class="kpi-strip">
+          <div class="kpi-cell">
+            <div class="kpi-label">Total Members</div>
+            <div class="kpi-val">284</div>
+            <div class="kpi-delta">↑ 18 this month</div>
+          </div>
+          <div class="kpi-cell">
+            <div class="kpi-label">Active Learners</div>
+            <div class="kpi-val">211</div>
+            <div class="kpi-delta">↑ 74% active rate</div>
+          </div>
+          <div class="kpi-cell">
+            <div class="kpi-label">Courses Live</div>
+            <div class="kpi-val">7</div>
+            <div class="kpi-delta">↑ 2 pending review</div>
+          </div>
+          <div class="kpi-cell">
+            <div class="kpi-label">Completions</div>
+            <div class="kpi-val">63%</div>
+            <div class="kpi-delta">↑ 4% vs last month</div>
+          </div>
+          <div class="kpi-cell">
+            <div class="kpi-label">Revenue (MTD)</div>
+            <div class="kpi-val">$8,240</div>
+            <div class="kpi-delta">↑ 12% vs last month</div>
+          </div>
+          <div class="kpi-cell">
+            <div class="kpi-label">Pending Approvals</div>
+            <div class="kpi-val">5</div>
+            <div class="kpi-delta neg">Needs attention</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;flex-wrap:wrap;">
+
+          <!-- Pending actions -->
+          <div class="sec-card" style="grid-column:1/-1;">
+            <div class="sec-head">
+              <div class="sec-title">Pending Actions</div>
+              <span class="pill pill-red">5 items</span>
+            </div>
+            <div class="action-item">
+              <div class="ai-icon" style="background:var(--em-light);">📚</div>
+              <div class="ai-text">
+                <div class="ai-title">Course submitted for approval</div>
+                <div class="ai-sub">Dr. Amara Cole · "Running Restorative Circles in Virtual Spaces" · 2h ago</div>
+              </div>
+              <div class="ai-actions">
+                <button class="btn-ghost" style="height:28px;font-size:0.68rem;" onclick="go('courses')">Review</button>
+              </div>
+            </div>
+            <div class="action-item">
+              <div class="ai-icon" style="background:var(--em-light);">📚</div>
+              <div class="ai-text">
+                <div class="ai-title">Course submitted for approval</div>
+                <div class="ai-sub">Terrence Williams · "Trauma-Informed Practices for Circle Keepers" · Yesterday</div>
+              </div>
+              <div class="ai-actions">
+                <button class="btn-ghost" style="height:28px;font-size:0.68rem;" onclick="go('courses')">Review</button>
+              </div>
+            </div>
+            <div class="action-item">
+              <div class="ai-icon" style="background:var(--blue-lt);">👤</div>
+              <div class="ai-text">
+                <div class="ai-title">3 new member applications</div>
+                <div class="ai-sub">Enrollment requires manual approval · Received today</div>
+              </div>
+              <div class="ai-actions">
+                <button class="btn-ghost" style="height:28px;font-size:0.68rem;" onclick="go('members')">Review</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent members -->
+          <div class="sec-card">
+            <div class="sec-head">
+              <div class="sec-title">New Members</div>
+              <span class="sec-link" onclick="go('members')">View all →</span>
+            </div>
+            <div class="action-item">
+              <div class="mt-av" style="width:32px;height:32px;font-size:0.62rem;">JA</div>
+              <div class="ai-text">
+                <div class="ai-title">Janelle Adams</div>
+                <div class="ai-sub">Joined today · Learner</div>
+              </div>
+              <span class="pill pill-em">Active</span>
+            </div>
+            <div class="action-item">
+              <div class="mt-av" style="width:32px;height:32px;font-size:0.62rem;background:linear-gradient(135deg,#6B3FA0,#187A49);">MT</div>
+              <div class="ai-text">
+                <div class="ai-title">Marcus Tate</div>
+                <div class="ai-sub">Joined yesterday · Learner</div>
+              </div>
+              <span class="pill pill-em">Active</span>
+            </div>
+            <div class="action-item">
+              <div class="mt-av" style="width:32px;height:32px;font-size:0.62rem;background:linear-gradient(135deg,#B8922E,#187A49);">RF</div>
+              <div class="ai-text">
+                <div class="ai-title">Renée Flores</div>
+                <div class="ai-sub">Applied · Pending approval</div>
+              </div>
+              <span class="pill pill-gld">Pending</span>
+            </div>
+          </div>
+
+          <!-- Revenue snapshot -->
+          <div class="sec-card">
+            <div class="sec-head">
+              <div class="sec-title">Revenue Snapshot</div>
+              <span class="sec-link" onclick="go('settings')">View billing →</span>
+            </div>
+            <div style="padding:16px 20px;display:flex;flex-direction:column;gap:10px;">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;">
+                <span style="font-size:0.72rem;color:var(--fg-2);">October 2026 (MTD)</span>
+                <span style="font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--fg);">$8,240</span>
+              </div>
+              <div style="height:1px;background:var(--line);"></div>
+              <div style="display:flex;justify-content:space-between;"><span style="font-size:0.72rem;color:var(--fg-2);">Gross revenue</span><span style="font-size:0.74rem;font-weight:600;color:var(--fg);">$8,663</span></div>
+              <div style="display:flex;justify-content:space-between;"><span style="font-size:0.72rem;color:var(--fg-2);">Ologee fee (5%)</span><span style="font-size:0.74rem;color:var(--red);">−$433</span></div>
+              <div style="display:flex;justify-content:space-between;"><span style="font-size:0.72rem;color:var(--fg-2);">Net to org</span><span style="font-size:0.74rem;font-weight:700;color:var(--emerald);">$8,230</span></div>
+              <div style="height:1px;background:var(--line);"></div>
+              <div style="display:flex;justify-content:space-between;"><span style="font-size:0.72rem;color:var(--fg-2);">Next payout</span><span style="font-size:0.72rem;color:var(--fg);">Nov 1, 2026</span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div><!-- /tab-home -->
+
+    <!-- ══ TAB: MEMBERS ══ -->
+    <div class="tab-panel" id="tab-members">
+      <div class="page-head">
+        <div>
+          <div class="ph-label">People</div>
+          <div class="ph-title">Members</div>
+        </div>
+        <div class="ph-actions">
+          <button class="btn-ghost">Export CSV</button>
+          <button class="btn-em">+ Invite member</button>
+        </div>
+      </div>
+      <div class="members-body">
+        <div class="search-bar">
+          <input class="search-input" placeholder="Search members by name or email…">
+          <select style="border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface);padding:8px 12px;font-size:0.78rem;color:var(--fg);outline:none;">
+            <option>All roles</option>
+            <option>Learner</option>
+            <option>Instructor</option>
+            <option>Admin</option>
+          </select>
+          <select style="border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface);padding:8px 12px;font-size:0.78rem;color:var(--fg);outline:none;">
+            <option>All statuses</option>
+            <option>Active</option>
+            <option>Pending</option>
+            <option>Suspended</option>
+          </select>
+        </div>
+
+        <!-- Pending approvals banner -->
+        <div style="background:var(--gold-lt);border:1px solid var(--gold);border-radius:var(--r-sm);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+          <div style="font-size:0.76rem;color:var(--fg);font-weight:600;">⏳ 3 members awaiting approval</div>
+          <button class="btn-ghost" style="height:28px;font-size:0.68rem;border-color:var(--gold);color:var(--gold);">Review pending</button>
+        </div>
+
+        <div class="member-table">
+          <div class="mt-head">
+            <span class="mt-col">Member</span>
+            <span class="mt-col">Role</span>
+            <span class="mt-col">Enrolled</span>
+            <span class="mt-col">Status</span>
+            <span class="mt-col"></span>
+          </div>
+          <div class="mt-row">
+            <div class="mt-name"><div class="mt-av">JA</div><div><div class="mt-nm">Janelle Adams</div><div class="mt-email">janelle.adams@gmail.com</div></div></div>
+            <span class="mt-cell"><span class="pill pill-neu">Learner</span></span>
+            <span class="mt-cell">3 courses</span>
+            <span class="mt-cell"><span class="pill pill-em">Active</span></span>
+            <div class="mt-actions"><button class="btn-ghost" style="height:26px;font-size:0.65rem;">Manage</button></div>
+          </div>
+          <div class="mt-row">
+            <div class="mt-name"><div class="mt-av" style="background:linear-gradient(135deg,#6B3FA0,#187A49);">MT</div><div><div class="mt-nm">Marcus Tate</div><div class="mt-email">m.tate@rle.org</div></div></div>
+            <span class="mt-cell"><span class="pill pill-neu">Learner</span></span>
+            <span class="mt-cell">1 course</span>
+            <span class="mt-cell"><span class="pill pill-em">Active</span></span>
+            <div class="mt-actions"><button class="btn-ghost" style="height:26px;font-size:0.65rem;">Manage</button></div>
+          </div>
+          <div class="mt-row">
+            <div class="mt-name"><div class="mt-av" style="background:linear-gradient(135deg,#B8922E,#187A49);">DR</div><div><div class="mt-nm">Dr. Amara Cole</div><div class="mt-email">amara.cole@rle.org</div></div></div>
+            <span class="mt-cell"><span class="pill pill-pur">Instructor</span></span>
+            <span class="mt-cell">2 courses taught</span>
+            <span class="mt-cell"><span class="pill pill-em">Active</span></span>
+            <div class="mt-actions"><button class="btn-ghost" style="height:26px;font-size:0.65rem;">Manage</button></div>
+          </div>
+          <div class="mt-row">
+            <div class="mt-name"><div class="mt-av" style="background:linear-gradient(135deg,#1A5FA0,#187A49);">RF</div><div><div class="mt-nm">Renée Flores</div><div class="mt-email">renee.f@proton.me</div></div></div>
+            <span class="mt-cell"><span class="pill pill-neu">Learner</span></span>
+            <span class="mt-cell">—</span>
+            <span class="mt-cell"><span class="pill pill-gld">Pending</span></span>
+            <div class="mt-actions">
+              <button class="btn-em" style="height:26px;font-size:0.65rem;padding:0 10px;">Approve</button>
+              <button class="btn-red" style="height:26px;font-size:0.65rem;">Deny</button>
+            </div>
+          </div>
+          <div class="mt-row">
+            <div class="mt-name"><div class="mt-av" style="background:linear-gradient(135deg,#C0392B,#6B3FA0);">SK</div><div><div class="mt-nm">Stephanie Kim</div><div class="mt-email">skim@outlook.com</div></div></div>
+            <span class="mt-cell"><span class="pill pill-neu">Learner</span></span>
+            <span class="mt-cell">—</span>
+            <span class="mt-cell"><span class="pill pill-gld">Pending</span></span>
+            <div class="mt-actions">
+              <button class="btn-em" style="height:26px;font-size:0.65rem;padding:0 10px;">Approve</button>
+              <button class="btn-red" style="height:26px;font-size:0.65rem;">Deny</button>
+            </div>
+          </div>
+          <div class="mt-row">
+            <div class="mt-name"><div class="mt-av" style="background:linear-gradient(135deg,#636360,#2E2E2C);">TW</div><div><div class="mt-nm">Terrence Williams</div><div class="mt-email">t.williams@rle.org</div></div></div>
+            <span class="mt-cell"><span class="pill pill-pur">Instructor</span></span>
+            <span class="mt-cell">1 course taught</span>
+            <span class="mt-cell"><span class="pill pill-red">Suspended</span></span>
+            <div class="mt-actions"><button class="btn-ghost" style="height:26px;font-size:0.65rem;">Reinstate</button></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tab-members -->
+
+    <!-- ══ TAB: COURSES ══ -->
+    <div class="tab-panel" id="tab-courses">
+      <div class="page-head">
+        <div>
+          <div class="ph-label">Content</div>
+          <div class="ph-title">Course Approvals</div>
+        </div>
+        <div class="ph-actions">
+          <span class="pill pill-red" style="font-size:0.68rem;padding:5px 12px;">2 pending</span>
+        </div>
+      </div>
+      <div class="courses-body">
+
+        <div class="approval-card">
+          <div class="ac-head">
+            <div>
+              <div class="ac-title">Running Restorative Circles in Virtual Spaces</div>
+              <div class="ac-meta">Submitted by Dr. Amara Cole · 2h ago · <span class="pill pill-gld">Pending Review</span></div>
+            </div>
+            <div style="display:flex;gap:6px;flex-shrink:0;">
+              <button class="btn-ghost" style="height:30px;font-size:0.7rem;">Preview</button>
+            </div>
+          </div>
+          <div class="ac-body">
+            <div class="ac-detail"><strong>Description:</strong> A practical course on adapting restorative circle practices for Zoom, Teams, and hybrid environments. Covers tech setup, virtual talking pieces, and breakout facilitation.</div>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:4px;">
+              <div class="ac-detail"><strong>Chapters:</strong> 4</div>
+              <div class="ac-detail"><strong>Lessons:</strong> 18</div>
+              <div class="ac-detail"><strong>Price:</strong> $95</div>
+              <div class="ac-detail"><strong>Est. duration:</strong> 6.5 hrs</div>
+              <div class="ac-detail"><strong>Certificate:</strong> Yes</div>
+            </div>
+          </div>
+          <div class="ac-footer">
+            <div style="font-size:0.68rem;color:var(--fg-3);">Approving publishes this course to enrolled members.</div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn-ghost" style="height:32px;font-size:0.72rem;color:var(--red);">Request changes</button>
+              <button class="btn-ghost" style="height:32px;font-size:0.72rem;color:var(--red);border-color:var(--red);">Reject</button>
+              <button class="btn-em" style="height:32px;font-size:0.72rem;">✓ Approve</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="approval-card">
+          <div class="ac-head">
+            <div>
+              <div class="ac-title">Trauma-Informed Practices for Circle Keepers</div>
+              <div class="ac-meta">Submitted by Terrence Williams · Yesterday · <span class="pill pill-gld">Pending Review</span></div>
+            </div>
+            <div style="display:flex;gap:6px;flex-shrink:0;">
+              <button class="btn-ghost" style="height:30px;font-size:0.7rem;">Preview</button>
+            </div>
+          </div>
+          <div class="ac-body">
+            <div class="ac-detail"><strong>Description:</strong> Equips circle keepers with trauma-informed frameworks for holding space with survivors. Includes somatic regulation techniques and community accountability approaches.</div>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:4px;">
+              <div class="ac-detail"><strong>Chapters:</strong> 5</div>
+              <div class="ac-detail"><strong>Lessons:</strong> 22</div>
+              <div class="ac-detail"><strong>Price:</strong> $120</div>
+              <div class="ac-detail"><strong>Est. duration:</strong> 8 hrs</div>
+              <div class="ac-detail"><strong>Certificate:</strong> Yes</div>
+            </div>
+          </div>
+          <div class="ac-footer">
+            <div style="font-size:0.68rem;color:var(--fg-3);">Instructor Terrence Williams is currently suspended — approval will require reinstatement.</div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn-ghost" style="height:32px;font-size:0.72rem;color:var(--red);">Request changes</button>
+              <button class="btn-ghost" style="height:32px;font-size:0.72rem;color:var(--red);border-color:var(--red);">Reject</button>
+              <button class="btn-em" style="height:32px;font-size:0.72rem;opacity:0.5;cursor:not-allowed;">✓ Approve</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 20px;">
+          <div style="font-size:0.75rem;font-weight:700;color:var(--fg);margin-bottom:12px;">Recently Approved</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;"><span style="font-size:0.76rem;color:var(--fg);">Foundations of Restorative Practice</span><span class="pill pill-em">Live</span></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;"><span style="font-size:0.76rem;color:var(--fg);">Circle Facilitation Practicum</span><span class="pill pill-em">Live</span></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;"><span style="font-size:0.76rem;color:var(--fg);">Restorative Justice for Educators</span><span class="pill pill-em">Live</span></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tab-courses -->
+
+    <!-- ══ TAB: INSTRUCTORS ══ -->
+    <div class="tab-panel" id="tab-instructors">
+      <div class="page-head">
+        <div>
+          <div class="ph-label">People</div>
+          <div class="ph-title">Instructor Roster</div>
+        </div>
+        <div class="ph-actions">
+          <button class="btn-ghost">Export CSV</button>
+          <button class="btn-em">+ Add instructor</button>
+        </div>
+      </div>
+      <div class="inst-body">
+        <div class="inst-table">
+          <div class="it-head">
+            <span class="mt-col">Instructor</span>
+            <span class="mt-col">Courses</span>
+            <span class="mt-col">Students</span>
+            <span class="mt-col">Status</span>
+            <span class="mt-col"></span>
+          </div>
+          <div class="it-row">
+            <div class="mt-name"><div class="mt-av">AC</div><div><div class="mt-nm">Dr. Amara Cole</div><div class="mt-email">amara.cole@rle.org</div></div></div>
+            <span class="mt-cell">3 live</span>
+            <span class="mt-cell">148</span>
+            <span class="mt-cell"><span class="pill pill-em">Active</span></span>
+            <div class="mt-actions"><button class="btn-ghost" style="height:26px;font-size:0.65rem;">Manage</button></div>
+          </div>
+          <div class="it-row">
+            <div class="mt-name"><div class="mt-av" style="background:linear-gradient(135deg,#1A5FA0,#187A49);">BM</div><div><div class="mt-nm">Bernice Mahon</div><div class="mt-email">b.mahon@rle.org</div></div></div>
+            <span class="mt-cell">2 live</span>
+            <span class="mt-cell">96</span>
+            <span class="mt-cell"><span class="pill pill-em">Active</span></span>
+            <div class="mt-actions"><button class="btn-ghost" style="height:26px;font-size:0.65rem;">Manage</button></div>
+          </div>
+          <div class="it-row">
+            <div class="mt-name"><div class="mt-av" style="background:linear-gradient(135deg,#B8922E,#187A49);">JR</div><div><div class="mt-nm">Jerome Reid</div><div class="mt-email">j.reid@rle.org</div></div></div>
+            <span class="mt-cell">1 live, 1 pending</span>
+            <span class="mt-cell">40</span>
+            <span class="mt-cell"><span class="pill pill-em">Active</span></span>
+            <div class="mt-actions"><button class="btn-ghost" style="height:26px;font-size:0.65rem;">Manage</button></div>
+          </div>
+          <div class="it-row">
+            <div class="mt-name"><div class="mt-av" style="background:linear-gradient(135deg,#636360,#2E2E2C);">TW</div><div><div class="mt-nm">Terrence Williams</div><div class="mt-email">t.williams@rle.org</div></div></div>
+            <span class="mt-cell">1 live</span>
+            <span class="mt-cell">22</span>
+            <span class="mt-cell"><span class="pill pill-red">Suspended</span></span>
+            <div class="mt-actions"><button class="btn-ghost" style="height:26px;font-size:0.65rem;">Reinstate</button></div>
+          </div>
+        </div>
+
+        <div style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 20px;">
+          <div style="font-size:0.76rem;font-weight:700;color:var(--fg);margin-bottom:12px;">Pending Instructor Applications</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);">
+            <div>
+              <div style="font-size:0.78rem;font-weight:600;color:var(--fg);">Priya Nair</div>
+              <div style="font-size:0.64rem;color:var(--fg-3);">Applied to teach · Submitted credentials Oct 14</div>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button class="btn-em" style="height:28px;font-size:0.68rem;padding:0 10px;">Approve</button>
+              <button class="btn-red" style="height:28px;font-size:0.68rem;">Deny</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tab-instructors -->
+
+    <!-- ══ TAB: SETTINGS ══ -->
+    <div class="tab-panel" id="tab-settings">
+      <div class="page-head">
+        <div>
+          <div class="ph-label">Organization</div>
+          <div class="ph-title">Settings & Branding</div>
+        </div>
+        <div class="ph-actions">
+          <button class="btn-em">Save changes</button>
+        </div>
+      </div>
+      <div class="settings-body">
+
+        <!-- Org info -->
+        <div class="setting-card">
+          <div class="sk-title">Organization Info</div>
+          <div class="sk-field">
+            <div class="sk-label">Organization Name</div>
+            <input class="sk-input" value="Restorative Legacy Ecosystem">
+          </div>
+          <div class="sk-field">
+            <div class="sk-label">Custom Domain</div>
+            <input class="sk-input" value="learn.restorativelegacy.org">
+          </div>
+          <div class="sk-field">
+            <div class="sk-label">Contact Email</div>
+            <input class="sk-input" value="admin@restorativelegacy.org">
+          </div>
+        </div>
+
+        <!-- Branding -->
+        <div class="setting-card">
+          <div class="sk-title">Branding</div>
+          <div class="sk-field">
+            <div class="sk-label">Logo</div>
+            <div style="border:1.5px dashed var(--line);border-radius:var(--r-sm);padding:16px;text-align:center;cursor:pointer;font-size:0.74rem;color:var(--fg-3);">
+              📁 Upload logo (PNG, SVG · up to 2MB)
+            </div>
+          </div>
+          <div class="sk-field">
+            <div class="sk-label">Primary Color</div>
+            <div class="color-row">
+              <div class="color-swatch active" style="background:#187A49;"></div>
+              <div class="color-swatch" style="background:#1A5FA0;"></div>
+              <div class="color-swatch" style="background:#6B3FA0;"></div>
+              <div class="color-swatch" style="background:#C0392B;"></div>
+              <div class="color-swatch" style="background:#B8922E;"></div>
+              <div class="color-swatch" style="background:#0F0F0D;"></div>
+              <div class="color-swatch" style="background:var(--line);border:1px solid var(--fg-3);" title="Custom">+</div>
+            </div>
+          </div>
+          <div class="sk-field">
+            <div class="sk-label">Platform Name (shown to learners)</div>
+            <input class="sk-input" value="Restorative Legacy Learning">
+          </div>
+        </div>
+
+        <!-- Access & compliance -->
+        <div class="setting-card">
+          <div class="sk-title">Access & Compliance</div>
+          <div class="sk-toggle-row">
+            <div><div class="sk-toggle-lbl">Manual member approval</div><div class="sk-toggle-sub">New members must be approved before accessing content</div></div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="sk-toggle-row">
+            <div><div class="sk-toggle-lbl">HIPAA-aligned data handling</div><div class="sk-toggle-sub">Enables BAA-grade data controls on this organization</div></div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="sk-toggle-row">
+            <div><div class="sk-toggle-lbl">SSO / SAML login</div><div class="sk-toggle-sub">Allow members to sign in via your identity provider</div></div>
+            <div class="toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="sk-toggle-row">
+            <div><div class="sk-toggle-lbl">Public course marketplace</div><div class="sk-toggle-sub">Allow non-members to discover and purchase courses</div></div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+
+        <!-- Billing -->
+        <div class="setting-card">
+          <div class="sk-title">Billing & Subscription</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <div>
+              <div style="font-size:0.8rem;font-weight:700;color:var(--fg);margin-bottom:3px;">Current Plan</div>
+              <div style="font-size:0.68rem;color:var(--fg-3);">Billed monthly via Stripe Connect</div>
+            </div>
+            <div class="plan-badge">⭐ Growth</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:0.74rem;color:var(--fg-2);margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;"><span>Monthly subscription</span><span style="color:var(--fg);font-weight:600;">$149 / mo</span></div>
+            <div style="display:flex;justify-content:space-between;"><span>Platform transaction fee</span><span style="color:var(--fg);font-weight:600;">5%</span></div>
+            <div style="display:flex;justify-content:space-between;"><span>Member seats included</span><span style="color:var(--fg);font-weight:600;">500</span></div>
+            <div style="display:flex;justify-content:space-between;"><span>Next billing date</span><span style="color:var(--fg);font-weight:600;">Nov 1, 2026</span></div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-ghost" style="flex:1;justify-content:center;">View invoices</button>
+            <button class="btn-ink" style="flex:1;justify-content:center;">Upgrade plan</button>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-settings -->
+
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<script>
+const NAV_MAP = {
+  home: 'nav-home', members: 'nav-members', courses: 'nav-courses',
+  instructors: 'nav-instructors', settings: 'nav-settings'
+};
+
+function go(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const panel = document.getElementById('tab-' + id);
+  if (panel) panel.classList.add('active');
+  const nav = document.getElementById(NAV_MAP[id]);
+  if (nav) nav.classList.add('active');
+}
+</script>
+
+</body></html>
